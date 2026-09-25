@@ -4,8 +4,18 @@ import ExpenseForm from './components/ExpenseForm';
 import SummaryCards from './components/SummaryCards';
 import SettlementSummary from './components/SettlementSummary';
 import ExpenseList from './components/ExpenseList';
+import { CURRENCIES } from './constants/categories';
 
 export default function App() {
+  // Initialize currency from localStorage (default INR)
+  const [currency, setCurrency] = useState(() => {
+    try {
+      return localStorage.getItem('et_currency') || 'INR';
+    } catch {
+      return 'INR';
+    }
+  });
+
   // Initialize from localStorage (default to empty arrays if not present)
   const [users, setUsers] = useState(() => {
     try {
@@ -27,6 +37,10 @@ export default function App() {
 
   // Save to localStorage on state changes
   useEffect(() => {
+    localStorage.setItem('et_currency', currency);
+  }, [currency]);
+
+  useEffect(() => {
     localStorage.setItem('et_group_users', JSON.stringify(users));
   }, [users]);
 
@@ -45,7 +59,10 @@ export default function App() {
     let totalGroupSpent = 0;
 
     expenses.forEach((expense) => {
-      totalGroupSpent += Number(expense.totalAmount || 0);
+      // Settlements do not count as new group purchases
+      if (!expense.isSettlement) {
+        totalGroupSpent += Number(expense.totalAmount || 0);
+      }
 
       // Add paid amounts for payers
       const paidMap = expense.paidByMap || {};
@@ -56,14 +73,23 @@ export default function App() {
       });
 
       // Add share amounts for splitters
-      const splitters = expense.splitBetween || [];
-      if (splitters.length > 0) {
-        const shareAmount = Number(expense.totalAmount || 0) / splitters.length;
-        splitters.forEach((person) => {
+      if (expense.splitDetails && Object.keys(expense.splitDetails).length > 0) {
+        Object.entries(expense.splitDetails).forEach(([person, details]) => {
           if (perUser[person]) {
-            perUser[person].share += shareAmount;
+            const shareAmt = typeof details === 'number' ? details : Number(details.amount || 0);
+            perUser[person].share += shareAmt;
           }
         });
+      } else {
+        const splitters = expense.splitBetween || [];
+        if (splitters.length > 0) {
+          const shareAmount = Number(expense.totalAmount || 0) / splitters.length;
+          splitters.forEach((person) => {
+            if (perUser[person]) {
+              perUser[person].share += shareAmount;
+            }
+          });
+        }
       }
     });
 
@@ -89,11 +115,14 @@ export default function App() {
           const newPaidMap = { ...exp.paidByMap };
           delete newPaidMap[name];
           const newSplitters = (exp.splitBetween || []).filter((u) => u !== name);
+          const newSplitDetails = { ...exp.splitDetails };
+          delete newSplitDetails[name];
           
           return {
             ...exp,
             paidByMap: newPaidMap,
             splitBetween: newSplitters,
+            splitDetails: newSplitDetails,
           };
         })
         .filter((exp) => Object.keys(exp.paidByMap).length > 0 && exp.splitBetween.length > 0)
@@ -109,6 +138,28 @@ export default function App() {
     setExpenses((prev) => prev.filter((exp) => exp.id !== id));
   };
 
+  // Record a peer-to-peer settlement payment
+  const handleRecordSettlement = ({ from, to, amount, paymentMethod, notes }) => {
+    const numAmt = Number(amount);
+    const newSettlement = {
+      id: 'settle_' + Date.now().toString(),
+      title: `Settlement: ${from} paid ${to}`,
+      totalAmount: numAmt,
+      paidByMap: { [from]: numAmt },
+      splitBetween: [to],
+      splitDetails: { [to]: { amount: numAmt } },
+      isSettlement: true,
+      settlementMeta: { from, to, paymentMethod, notes },
+      date: new Date().toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }),
+    };
+
+    setExpenses((prev) => [newSettlement, ...prev]);
+  };
+
   const handleResetData = () => {
     if (window.confirm('Are you sure you want to clear all members and expenses?')) {
       setUsers([]);
@@ -119,30 +170,59 @@ export default function App() {
   };
 
   return (
-    <div className="app-container">
-      {/* Header */}
-      <header className="app-header glass-panel">
-        <div className="header-brand">
-          <div className="logo-badge">💸</div>
-          <div>
-            <h1 className="app-title">Expense Tracker & Splitter</h1>
-            <p className="app-subtitle">Custom group expense sharing & multi-payer manager</p>
-          </div>
-        </div>
+    <div className="app-wrapper">
+      {/* Dynamic Ambient Mesh Glow Background */}
+      <div className="ambient-background" aria-hidden="true">
+        <div className="ambient-orb orb-primary" />
+        <div className="ambient-orb orb-emerald" />
+        <div className="ambient-orb orb-violet" />
+      </div>
 
-        {(users.length > 0 || expenses.length > 0) && (
-          <button type="button" className="btn danger-outline-btn" onClick={handleResetData}>
-            Clear All Data
-          </button>
-        )}
+      <div className="app-container">
+        {/* Header */}
+        <header className="app-header glass-panel">
+          <div className="header-brand">
+            <div className="logo-badge">
+              <span className="logo-emoji">💸</span>
+              <div className="logo-glow" />
+            </div>
+            <div>
+              <h1 className="app-title">Expense Tracker & Splitter</h1>
+              <p className="app-subtitle">Multi-payer splitting, debt settlement & group finances</p>
+            </div>
+          </div>
+
+        <div className="header-controls">
+          {/* Currency Selector */}
+          <div className="currency-selector-wrapper">
+            <span className="currency-label">Currency:</span>
+            <select
+              className="text-input currency-select"
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+            >
+              {Object.values(CURRENCIES).map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {(users.length > 0 || expenses.length > 0) && (
+            <button type="button" className="btn danger-outline-btn" onClick={handleResetData}>
+              Clear All Data
+            </button>
+          )}
+        </div>
       </header>
 
       {/* Main Grid */}
       <main className="app-main">
         {/* Top Summary Cards */}
-        <SummaryCards users={users} expenses={expenses} totals={totals} />
+        <SummaryCards users={users} expenses={expenses} totals={totals} currency={currency} />
 
-        {/* Dynamic User Management (No defaults) */}
+        {/* Dynamic User Management */}
         <UserManagement
           users={users}
           onAddUser={handleAddUser}
@@ -150,15 +230,25 @@ export default function App() {
           expenses={expenses}
         />
 
-        {/* Expense Creation Form (Single & Multi Payer, Multi Splitter) */}
-        <ExpenseForm users={users} onAddExpense={handleAddExpense} />
+        {/* Expense Creation Form (Single & Multi Payer, Categories, Split Modes) */}
+        <ExpenseForm users={users} onAddExpense={handleAddExpense} currency={currency} />
 
-        {/* Debt Simplification Transfers */}
-        <SettlementSummary users={users} totals={totals} />
+        {/* Debt Simplification Transfers & Settlement Modal */}
+        <SettlementSummary
+          users={users}
+          totals={totals}
+          onRecordSettlement={handleRecordSettlement}
+          currency={currency}
+        />
 
-        {/* Recent Expenses List */}
-        <ExpenseList expenses={expenses} onDeleteExpense={handleDeleteExpense} />
+        {/* Recent Expenses List with Category & Settlement Filters */}
+        <ExpenseList
+          expenses={expenses}
+          onDeleteExpense={handleDeleteExpense}
+          currency={currency}
+        />
       </main>
     </div>
+  </div>
   );
 }

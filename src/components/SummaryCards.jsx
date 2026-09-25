@@ -1,4 +1,5 @@
 import { formatCurrency, getCategoryById } from '../utils/formatters';
+import { WalletIcon, ReceiptIcon, UsersIcon, CategoryIcon } from './Icons';
 
 export default function SummaryCards({ users, expenses, totals, currency = 'INR' }) {
   // Exclude settlements from group purchase count
@@ -21,7 +22,9 @@ export default function SummaryCards({ users, expenses, totals, currency = 'INR'
     <section className="summary-section">
       <div className="metrics-grid">
         <div className="metric-card glass-panel" style={{ '--card-index': 0 }}>
-          <div className="metric-icon">💰</div>
+          <div className="metric-icon metric-icon-wallet">
+            <WalletIcon size={22} />
+          </div>
           <div>
             <span className="metric-label">Total Group Spent</span>
             <h3 className="metric-value">{formatCurrency(totals.totalGroupSpent, currency)}</h3>
@@ -29,7 +32,9 @@ export default function SummaryCards({ users, expenses, totals, currency = 'INR'
         </div>
 
         <div className="metric-card glass-panel" style={{ '--card-index': 1 }}>
-          <div className="metric-icon">🧾</div>
+          <div className="metric-icon metric-icon-receipt">
+            <ReceiptIcon size={22} />
+          </div>
           <div>
             <span className="metric-label">Expenses & Settlements</span>
             <h3 className="metric-value">
@@ -39,7 +44,9 @@ export default function SummaryCards({ users, expenses, totals, currency = 'INR'
         </div>
 
         <div className="metric-card glass-panel" style={{ '--card-index': 2 }}>
-          <div className="metric-icon">👥</div>
+          <div className="metric-icon metric-icon-users">
+            <UsersIcon size={22} />
+          </div>
           <div>
             <span className="metric-label">Group Members</span>
             <h3 className="metric-value">{users.length}</h3>
@@ -85,7 +92,8 @@ export default function SummaryCards({ users, expenses, totals, currency = 'INR'
                   style={{ borderColor: `${catObj.color}33` }}
                 >
                   <span className="cat-color-dot" style={{ backgroundColor: catObj.color }} />
-                  <span>{catObj.icon} {catObj.label}</span>
+                  <CategoryIcon id={catId} size={14} className="cat-icon-svg" />
+                  <span>{catObj.label}</span>
                   <span className="cat-pct-badge">{pct}%</span>
                   <strong>{formatCurrency(amt, currency)}</strong>
                 </div>
@@ -135,7 +143,7 @@ export default function SummaryCards({ users, expenses, totals, currency = 'INR'
                           ? `Gets back ${formatCurrency(balance, currency)}`
                           : isNegative
                           ? `Owes ${formatCurrency(Math.abs(balance), currency)}`
-                          : 'Settled Up 🎉'}
+                          : 'Settled Up'}
                       </span>
                     </div>
                   </div>

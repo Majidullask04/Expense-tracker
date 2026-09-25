@@ -1,6 +1,16 @@
 import { useState, useMemo } from 'react';
 import { CATEGORIES } from '../constants/categories';
 import { formatCurrency, getCategoryById } from '../utils/formatters';
+import {
+  SearchIcon,
+  ReceiptIcon,
+  HandshakeIcon,
+  RotateCcwIcon,
+  TrashIcon,
+  CreditCardIcon,
+  UsersIcon,
+  CategoryIcon,
+} from './Icons';
 
 export default function ExpenseList({ expenses, onDeleteExpense, currency = 'INR' }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,24 +60,24 @@ export default function ExpenseList({ expenses, onDeleteExpense, currency = 'INR
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
-              <option value="all">📁 All Categories</option>
+              <option value="all">All Categories</option>
               {CATEGORIES.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.icon} {c.label}
+                  {c.label}
                 </option>
               ))}
-              <option value="settlement">🤝 Settlements</option>
+              <option value="settlement">Settlements</option>
             </select>
 
             {/* Search input */}
             <div className="search-box">
-              <span className="search-icon">🔍</span>
+              <SearchIcon size={16} className="search-icon-svg" />
               <input
                 type="text"
                 className="text-input search-input"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by title or person..."
+                placeholder="Search transactions..."
               />
             </div>
           </div>
@@ -76,15 +86,19 @@ export default function ExpenseList({ expenses, onDeleteExpense, currency = 'INR
 
       {expenses.length === 0 ? (
         <div className="empty-expenses-box">
-          <span className="empty-icon">💸</span>
-          <h3>No expenses recorded yet</h3>
-          <p className="muted-text">Add your first expense or record a settlement above to start tracking balances!</p>
+          <div className="empty-icon-circle">
+            <ReceiptIcon size={30} />
+          </div>
+          <h3>No transactions recorded</h3>
+          <p className="muted-text">Add your first expense or record a settlement to start tracking.</p>
         </div>
       ) : filteredExpenses.length === 0 ? (
         <div className="empty-expenses-box">
-          <span className="empty-icon">🔎</span>
-          <h3>No matching records found</h3>
-          <p className="muted-text">Try adjusting your category filter or search keyword.</p>
+          <div className="empty-icon-circle">
+            <SearchIcon size={30} />
+          </div>
+          <h3>No matching transactions</h3>
+          <p className="muted-text">Try adjusting your category filter or search keywords.</p>
         </div>
       ) : (
         <div className="expense-items-list">
@@ -106,7 +120,8 @@ export default function ExpenseList({ expenses, onDeleteExpense, currency = 'INR
                   <div className="expense-card-top">
                     <div className="expense-title-group">
                       <div className="settlement-badge-pill">
-                        <span>🤝 Settlement</span>
+                        <HandshakeIcon size={14} />
+                        <span>Settlement</span>
                         {meta.paymentMethod && (
                           <span className="method-tag">via {meta.paymentMethod.toUpperCase()}</span>
                         )}
@@ -128,11 +143,12 @@ export default function ExpenseList({ expenses, onDeleteExpense, currency = 'INR
                   <div className="expense-card-footer">
                     <button
                       type="button"
-                      className="delete-expense-btn"
+                      className="delete-expense-btn btn-with-icon"
                       onClick={() => onDeleteExpense(expense.id)}
                       title="Undo this settlement"
                     >
-                      ↩️ Revert / Delete
+                      <RotateCcwIcon size={13} />
+                      <span>Revert Settlement</span>
                     </button>
                   </div>
                 </div>
@@ -153,7 +169,8 @@ export default function ExpenseList({ expenses, onDeleteExpense, currency = 'INR
                         className="cat-badge"
                         style={{ borderColor: `${cat.color}44`, backgroundColor: `${cat.color}18`, color: cat.color }}
                       >
-                        {cat.icon} {cat.label}
+                        <CategoryIcon id={expense.category} size={13} />
+                        <span>{cat.label}</span>
                       </span>
                       {expense.splitType && (
                         <span className="split-type-badge">
@@ -172,7 +189,10 @@ export default function ExpenseList({ expenses, onDeleteExpense, currency = 'INR
 
                 <div className="expense-details-grid">
                   <div className="detail-block">
-                    <span className="detail-label">💳 Paid By:</span>
+                    <span className="detail-label">
+                      <CreditCardIcon size={13} className="label-icon-svg" />
+                      <span>Paid By:</span>
+                    </span>
                     <div className="payers-tags">
                       {payersList.map(([payer, amt]) => (
                         <span key={payer} className="payer-tag">
@@ -183,7 +203,10 @@ export default function ExpenseList({ expenses, onDeleteExpense, currency = 'INR
                   </div>
 
                   <div className="detail-block">
-                    <span className="detail-label">🍕 Split Between ({splitters.length}):</span>
+                    <span className="detail-label">
+                      <UsersIcon size={13} className="label-icon-svg" />
+                      <span>Split Between ({splitters.length}):</span>
+                    </span>
                     <div className="splitters-tags">
                       {splitters.map((person) => {
                         const splitAmt =
@@ -203,10 +226,11 @@ export default function ExpenseList({ expenses, onDeleteExpense, currency = 'INR
                 <div className="expense-card-footer">
                   <button
                     type="button"
-                    className="delete-expense-btn"
+                    className="delete-expense-btn btn-with-icon"
                     onClick={() => onDeleteExpense(expense.id)}
                   >
-                    🗑️ Delete Expense
+                    <TrashIcon size={13} />
+                    <span>Delete Expense</span>
                   </button>
                 </div>
               </div>

@@ -1,6 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
 import { CATEGORIES, SPLIT_TYPES } from '../constants/categories';
 import { formatCurrency, getCurrencySymbol } from '../utils/formatters';
+import {
+  CategoryIcon,
+  SplitTypeIcon,
+  CreditCardIcon,
+  ScaleIcon,
+  SparklesIcon,
+  RotateCcwIcon,
+  CheckCircleIcon,
+  AlertCircleIcon,
+  PlusIcon,
+} from './Icons';
 
 export default function ExpenseForm({ users, onAddExpense, currency = 'INR' }) {
   const [title, setTitle] = useState('');
@@ -348,7 +359,9 @@ export default function ExpenseForm({ users, onAddExpense, currency = 'INR' }) {
 
       {users.length === 0 ? (
         <div className="empty-warning-box">
-          <span className="icon">⚠️</span>
+          <div className="warning-icon-wrapper">
+            <AlertCircleIcon size={20} />
+          </div>
           <p>You need to add at least one group member above before you can record expenses.</p>
         </div>
       ) : (
@@ -363,7 +376,7 @@ export default function ExpenseForm({ users, onAddExpense, currency = 'INR' }) {
                 className="text-input"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Grocery run, Pizza night, Taxi..."
+                placeholder="e.g., Grocery run, Team dinner, Airport taxi..."
               />
             </div>
 
@@ -399,7 +412,7 @@ export default function ExpenseForm({ users, onAddExpense, currency = 'INR' }) {
                     onClick={() => setCategory(cat.id)}
                     style={isSelected ? { borderColor: cat.color, backgroundColor: `${cat.color}22` } : {}}
                   >
-                    <span className="cat-icon">{cat.icon}</span>
+                    <CategoryIcon id={cat.id} size={15} className="cat-icon-svg" />
                     <span className="cat-label">{cat.label}</span>
                   </button>
                 );
@@ -410,7 +423,10 @@ export default function ExpenseForm({ users, onAddExpense, currency = 'INR' }) {
           {/* Paid By Section */}
           <div className="form-group-section">
             <div className="section-subtitle-bar">
-              <label className="section-title">💳 Paid By</label>
+              <div className="section-title-with-icon">
+                <CreditCardIcon size={16} />
+                <label className="section-title">Paid By</label>
+              </div>
               <button
                 type="button"
                 className="toggle-mode-btn"
@@ -441,10 +457,11 @@ export default function ExpenseForm({ users, onAddExpense, currency = 'INR' }) {
                   {numAmount > 0 && Object.keys(paidByMap).length > 0 && (
                     <button
                       type="button"
-                      className="text-btn"
+                      className="text-btn btn-with-icon"
                       onClick={splitPaidAmountEqually}
                     >
-                      ⚡ Split paid amount equally
+                      <SparklesIcon size={13} />
+                      <span>Split paid amount equally</span>
                     </button>
                   )}
                 </div>
@@ -492,7 +509,10 @@ export default function ExpenseForm({ users, onAddExpense, currency = 'INR' }) {
           {/* Split Mode Selector Tabs */}
           <div className="form-group-section">
             <div className="section-subtitle-bar">
-              <label className="section-title">🍕 Split Method</label>
+              <div className="section-title-with-icon">
+                <ScaleIcon size={16} />
+                <label className="section-title">Split Method</label>
+              </div>
             </div>
 
             <div className="split-type-tabs">
@@ -503,7 +523,7 @@ export default function ExpenseForm({ users, onAddExpense, currency = 'INR' }) {
                   className={`split-type-tab ${splitType === type.id ? 'active' : ''}`}
                   onClick={() => setSplitType(type.id)}
                 >
-                  <span className="tab-icon">{type.icon}</span>
+                  <SplitTypeIcon id={type.id} size={15} />
                   <span className="tab-label">{type.label}</span>
                 </button>
               ))}
@@ -546,7 +566,7 @@ export default function ExpenseForm({ users, onAddExpense, currency = 'INR' }) {
                       >
                         <span className="chip-avatar">{user.charAt(0)}</span>
                         <span>{user}</span>
-                        {isSelected && <span className="check-mark">✓</span>}
+                        {isSelected && <CheckCircleIcon size={14} className="check-mark-svg" />}
                       </button>
                     );
                   })}
@@ -572,11 +592,12 @@ export default function ExpenseForm({ users, onAddExpense, currency = 'INR' }) {
                         {unequalStats.diff > 0 ? `${formatCurrency(unequalStats.diff, currency)} left` : `${formatCurrency(Math.abs(unequalStats.diff), currency)} over`}
                       </span>
                     ) : (
-                      <span className="diff-badge success">✓ Balanced</span>
+                      <span className="diff-badge success">Balanced</span>
                     )}
                   </div>
-                  <button type="button" className="text-btn" onClick={handleAutoDistributeUnequal}>
-                    ⚡ Distribute evenly
+                  <button type="button" className="text-btn btn-with-icon" onClick={handleAutoDistributeUnequal}>
+                    <SparklesIcon size={13} />
+                    <span>Distribute evenly</span>
                   </button>
                 </div>
 
@@ -615,17 +636,18 @@ export default function ExpenseForm({ users, onAddExpense, currency = 'INR' }) {
               <div className="custom-split-view">
                 <div className="custom-split-header">
                   <div className="status-indicator">
-                    <span>Total %: <strong>{percentageStats.totalPct.toFixed(1)}%</strong> / 100%</span>
+                    <span>Total: <strong>{percentageStats.totalPct.toFixed(1)}%</strong> / 100%</span>
                     {Math.abs(percentageStats.diffPct) > 0.1 ? (
                       <span className="diff-badge warning">
                         {percentageStats.diffPct > 0 ? `${percentageStats.diffPct.toFixed(1)}% left` : `${Math.abs(percentageStats.diffPct).toFixed(1)}% over`}
                       </span>
                     ) : (
-                      <span className="diff-badge success">✓ Balanced</span>
+                      <span className="diff-badge success">Balanced</span>
                     )}
                   </div>
-                  <button type="button" className="text-btn" onClick={handleAutoDistributePercentages}>
-                    ⚡ Split % equally
+                  <button type="button" className="text-btn btn-with-icon" onClick={handleAutoDistributePercentages}>
+                    <SparklesIcon size={13} />
+                    <span>Split % equally</span>
                   </button>
                 </div>
 
@@ -672,8 +694,9 @@ export default function ExpenseForm({ users, onAddExpense, currency = 'INR' }) {
                   <div className="status-indicator">
                     <span>Total Shares: <strong>{sharesStats.totalShares}</strong></span>
                   </div>
-                  <button type="button" className="text-btn" onClick={handleResetShares}>
-                    ⚡ Reset to 1 share each
+                  <button type="button" className="text-btn btn-with-icon" onClick={handleResetShares}>
+                    <RotateCcwIcon size={13} />
+                    <span>Reset to 1 share each</span>
                   </button>
                 </div>
 
@@ -721,8 +744,9 @@ export default function ExpenseForm({ users, onAddExpense, currency = 'INR' }) {
 
           {formError && <p className="error-message form-alert">{formError}</p>}
 
-          <button type="submit" className="btn primary-btn submit-btn">
-            + Save Expense
+          <button type="submit" className="btn primary-btn submit-btn btn-with-icon">
+            <PlusIcon size={16} />
+            <span>Save Expense</span>
           </button>
         </form>
       )}

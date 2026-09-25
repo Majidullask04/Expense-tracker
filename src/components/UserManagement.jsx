@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { UserPlusIcon, UsersIcon, XIcon } from './Icons';
 
 export default function UserManagement({ users, onAddUser, onDeleteUser, expenses }) {
   const [nameInput, setNameInput] = useState('');
@@ -37,7 +38,7 @@ export default function UserManagement({ users, onAddUser, onDeleteUser, expense
       <div className="section-header">
         <div>
           <h2>Group Members ({users.length})</h2>
-          <p className="muted-text">Add people to split expenses with. Create your own custom members list.</p>
+          <p className="muted-text">Add people to split expenses with. Create your custom member directory.</p>
         </div>
       </div>
 
@@ -53,8 +54,9 @@ export default function UserManagement({ users, onAddUser, onDeleteUser, expense
             }}
             placeholder="Enter person's name (e.g., Alex, Priya)..."
           />
-          <button type="submit" className="btn primary-btn">
-            + Add Person
+          <button type="submit" className="btn primary-btn btn-with-icon">
+            <UserPlusIcon size={16} />
+            <span>Add Member</span>
           </button>
         </div>
         {error && <p className="error-message">{error}</p>}
@@ -63,8 +65,10 @@ export default function UserManagement({ users, onAddUser, onDeleteUser, expense
       <div className="users-pill-grid">
         {users.length === 0 ? (
           <div className="empty-state-mini">
-            <span className="icon">👥</span>
-            <p>No group members added yet. Start by adding a member above!</p>
+            <div className="empty-state-icon-circle">
+              <UsersIcon size={22} />
+            </div>
+            <p>No group members added yet. Start by entering a name above.</p>
           </div>
         ) : (
           users.map((user) => {
@@ -78,8 +82,9 @@ export default function UserManagement({ users, onAddUser, onDeleteUser, expense
                   className="delete-user-btn"
                   onClick={() => onDeleteUser(user)}
                   title={inUse ? "Remove member from group" : "Remove person"}
+                  aria-label={`Remove ${user}`}
                 >
-                  ✕
+                  <XIcon size={13} />
                 </button>
               </div>
             );

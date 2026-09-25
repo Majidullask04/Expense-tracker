@@ -1,5 +1,15 @@
 import { useState, useMemo } from 'react';
 import { formatCurrency } from '../utils/formatters';
+import {
+  HandshakeIcon,
+  CheckCircleIcon,
+  ArrowRightIcon,
+  XIcon,
+  SmartphoneIcon,
+  BanknoteIcon,
+  LandmarkIcon,
+  CreditCardIcon,
+} from './Icons';
 
 export default function SettlementSummary({ users, totals, onRecordSettlement, currency = 'INR' }) {
   const [activeSettlementModal, setActiveSettlementModal] = useState(null);
@@ -100,13 +110,19 @@ export default function SettlementSummary({ users, totals, onRecordSettlement, c
 
       {settlements.length === 0 ? (
         <div className="empty-settled-box">
-          <span className="settled-icon">✨</span>
-          <p className="settled-text">Everyone is fully settled up! No pending payments.</p>
+          <div className="settled-icon-circle">
+            <CheckCircleIcon size={26} />
+          </div>
+          <p className="settled-text">Everyone is fully settled up. No pending balances.</p>
         </div>
       ) : (
         <div className="settlements-grid">
           {settlements.map((item, idx) => (
-            <div key={`${item.from}-${item.to}-${idx}`} className="settlement-card">
+            <div
+              key={`${item.from}-${item.to}-${idx}`}
+              className="settlement-card"
+              style={{ '--card-index': idx }}
+            >
               <div className="settlement-content">
                 <div className="settlement-party from-party">
                   <span className="avatar">{item.from.charAt(0)}</span>
@@ -117,7 +133,7 @@ export default function SettlementSummary({ users, totals, onRecordSettlement, c
                   <span className="pays-text">pays</span>
                   <div className="arrow-line">
                     <span className="amount-tag">{formatCurrency(item.amount, currency)}</span>
-                    <span className="arrow-head">➔</span>
+                    <ArrowRightIcon size={14} className="arrow-head-icon" />
                   </div>
                 </div>
 
@@ -130,10 +146,11 @@ export default function SettlementSummary({ users, totals, onRecordSettlement, c
               <div className="settlement-card-actions">
                 <button
                   type="button"
-                  className="btn settle-btn"
+                  className="btn settle-btn btn-with-icon"
                   onClick={() => handleOpenModal(item)}
                 >
-                  🤝 Settle Up
+                  <HandshakeIcon size={15} />
+                  <span>Settle Up</span>
                 </button>
               </div>
             </div>
@@ -147,7 +164,14 @@ export default function SettlementSummary({ users, totals, onRecordSettlement, c
           <div className="modal-dialog glass-panel" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Record Settlement Payment</h3>
-              <button type="button" className="close-btn" onClick={handleCloseModal}>✕</button>
+              <button
+                type="button"
+                className="close-btn"
+                onClick={handleCloseModal}
+                aria-label="Close modal"
+              >
+                <XIcon size={18} />
+              </button>
             </div>
 
             <form onSubmit={handleConfirmSettlement} className="settlement-form">
@@ -156,7 +180,7 @@ export default function SettlementSummary({ users, totals, onRecordSettlement, c
                   <span className="party-role">From (Payer)</span>
                   <strong className="party-name">{activeSettlementModal.from}</strong>
                 </div>
-                <span className="party-arrow">➔</span>
+                <ArrowRightIcon size={20} className="party-arrow-svg" />
                 <div className="party-box to">
                   <span className="party-role">To (Recipient)</span>
                   <strong className="party-name">{activeSettlementModal.to}</strong>
@@ -187,21 +211,24 @@ export default function SettlementSummary({ users, totals, onRecordSettlement, c
                 <label>Payment Method</label>
                 <div className="payment-methods-grid">
                   {[
-                    { id: 'upi', label: 'UPI / GPay', icon: '📱' },
-                    { id: 'cash', label: 'Cash', icon: '💵' },
-                    { id: 'bank', label: 'Bank Transfer', icon: '🏦' },
-                    { id: 'other', label: 'Other', icon: '💳' },
-                  ].map((m) => (
-                    <button
-                      key={m.id}
-                      type="button"
-                      className={`method-chip ${paymentMethod === m.id ? 'active' : ''}`}
-                      onClick={() => setPaymentMethod(m.id)}
-                    >
-                      <span>{m.icon}</span>
-                      <span>{m.label}</span>
-                    </button>
-                  ))}
+                    { id: 'upi', label: 'UPI / Instant', icon: SmartphoneIcon },
+                    { id: 'cash', label: 'Cash', icon: BanknoteIcon },
+                    { id: 'bank', label: 'Bank Transfer', icon: LandmarkIcon },
+                    { id: 'other', label: 'Card / Other', icon: CreditCardIcon },
+                  ].map((m) => {
+                    const MethodIcon = m.icon;
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        className={`method-chip ${paymentMethod === m.id ? 'active' : ''}`}
+                        onClick={() => setPaymentMethod(m.id)}
+                      >
+                        <MethodIcon size={16} />
+                        <span>{m.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -220,8 +247,9 @@ export default function SettlementSummary({ users, totals, onRecordSettlement, c
                 <button type="button" className="btn secondary-btn" onClick={handleCloseModal}>
                   Cancel
                 </button>
-                <button type="submit" className="btn primary-btn">
-                  ✓ Confirm & Clear Debt
+                <button type="submit" className="btn primary-btn btn-with-icon">
+                  <CheckCircleIcon size={16} />
+                  <span>Confirm Settlement</span>
                 </button>
               </div>
             </form>

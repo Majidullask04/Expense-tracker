@@ -5,6 +5,7 @@ import SummaryCards from './components/SummaryCards';
 import SettlementSummary from './components/SettlementSummary';
 import ExpenseList from './components/ExpenseList';
 import { CURRENCIES } from './constants/categories';
+import { LogoIcon } from './components/Icons';
 
 export default function App() {
   // Initialize currency from localStorage (default INR)
@@ -183,7 +184,7 @@ export default function App() {
         <header className="app-header glass-panel">
           <div className="header-brand">
             <div className="logo-badge">
-              <span className="logo-emoji">💸</span>
+              <LogoIcon size={26} className="logo-icon-svg" />
               <div className="logo-glow" />
             </div>
             <div>
